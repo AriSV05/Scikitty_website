@@ -1,0 +1,61 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #171A1F;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 999; /* Asegura que el header esté por encima de otros elementos */
+}
+
+header h1 {
+    margin: 0;
+    padding: 0;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+header img {
+    width: 40px;
+    height: 40px;
+    vertical-align: middle;
+    margin-left: 10px; /* Ajusta el margen entre el título y el icono */
+}
+
+#menu {
+    background-color: #2B3FFF;
+    height: 100%;
+    width: 200px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow-x: hidden;
+    padding-top: 20px;
+}
+
+#menu div {
+    padding: 10px;
+    cursor: pointer;
+    background-color: #2BC3FF;
+    color: white;
+}
+
+#python-icon {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    width: 30px;
+    height: 30px;
+}
+
+#content {
+    margin-left: 220px; /* Toma en cuenta el ancho del menú */
+    padding: 20px;
+}
