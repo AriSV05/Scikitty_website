@@ -1,0 +1,32 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SciKitty - Binario-Binario</title>
+    <link rel="stylesheet" href="{% static '/css/styles.css' %}">
+</head>
+<body>
+    {% include 'header.html' %}
+    <main>
+        {% include 'menu.html' %}
+        <div id="content">
+            <h2>atributo-binario target-binario</h2>
+            <div>
+                <select id="listaModelos">
+                    <option value="" disabled selected>Cargar modelo previo</option>
+                    <!-- Options will be loaded dynamically -->
+                </select>
+                <button id="cargarPrev">Cargar Modelo</button>
+            </div>
+            <div class="file-drop-area">
+                <label for="file">Cargar archivo</span>
+                <input type="file" id="file" class="file">
+                <button id="upload">Upload</button>
+                <button id="cancelar">Cancelar</button>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

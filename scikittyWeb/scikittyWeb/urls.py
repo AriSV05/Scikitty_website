@@ -20,7 +20,8 @@ from paginaIA import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.home, name='home')
+    path('', views.home, name='home'),
+    path('binario_binario/', views.binario_binario, name='binario_binario'),
 ]
 
 # from django.contrib.staticfiles.urls import staticfiles_urlpatterns

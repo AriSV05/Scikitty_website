@@ -1,23 +1,16 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SciKitty - Home</title>
-    <link rel="stylesheet" href="/static/home.css">
+    <link rel="stylesheet" href="{% static '/css/styles.css' %}">
 </head>
 <body>
-    <header>
-        <h1>SciKitty</h1>
-        <img src="" alt="SciKitty Icon">
-    </header>
-    <div id="menu">
-        <div id="bin-bin">Bin-Bin</div>
-        <div id="bin-multi">Bin-Multi</div>
-        <img src="" alt="Python Icon" id="python-icon">
-    </div>
-    <div id="content">
-        <!-- Cuerpo vacío -->
-    </div>
+    {% include 'header.html' %}
+    <main>
+        {% include 'menu.html' %}
+    </main>
 </body>
 </html>
