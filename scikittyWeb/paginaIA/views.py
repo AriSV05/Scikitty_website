@@ -34,3 +34,18 @@ def cargar_csv(request):
         return render(request, 'binario_binario.html', {'mensaje': mensaje})
 
     return render(request, 'binario_binario.html')#TODO render a new page
+
+def get_image_tree(request):
+    if request.method == 'GET':
+
+        # URL del servidor remoto
+        url = 'http://127.0.0.1:8001/image_tree'
+
+        # Hacer la solicitud POST al servidor remoto con el archivo adjunto
+        response = requests.get(url)
+
+        # Verificar el estado de la respuesta
+        with open('./paginaIA/static/images/tree_image.png', 'wb') as f:
+            f.write(response.content)
+
+    return render(request, 'binario_binario.html')#TODO render a new page

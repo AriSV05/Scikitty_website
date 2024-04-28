@@ -25,19 +25,13 @@
                 <div class="file-drop-area">
                     <label for="file">Cargar archivo</label>
                     <input type="file" id="file" name="archivo_csv" class="file" accept=".csv">
-                    <input type="hidden" name="nombre_archivo" id="nombre_archivo">
                     <button type="submit" id="upload">Upload</button>
                     <button id="cancelar">Cancelar</button>
                 </div>
             </form>
-
-            <script>
-                // Obtener el nombre del archivo y almacenarlo en el campo oculto
-                document.querySelector('input[type="file"]').addEventListener('change', function() {
-                    document.getElementById('nombre_archivo').value = this.files[0].name;
-                });
-            </script>
-            
+            <!-- <form method="get" action="{% url 'get_image_tree' %}" enctype="multipart/form-data">
+                {% csrf_token %}<button type="submit">See</button></form> 
+                <img src="/static/images/tree_image.png" class="tree_image">-->           
         </div>
     </main>
 </body>
