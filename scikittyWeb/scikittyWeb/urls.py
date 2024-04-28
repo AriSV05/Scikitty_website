@@ -22,6 +22,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
     path('binario_binario/', views.binario_binario, name='binario_binario'),
+    path('cargar_csv/', views.cargar_csv, name='cargar_csv'),
 ]
 
 # from django.contrib.staticfiles.urls import staticfiles_urlpatterns

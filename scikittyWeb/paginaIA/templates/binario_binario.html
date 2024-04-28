@@ -20,12 +20,24 @@
                 </select>
                 <button id="cargarPrev">Cargar Modelo</button>
             </div>
-            <div class="file-drop-area">
-                <label for="file">Cargar archivo</span>
-                <input type="file" id="file" class="file">
-                <button id="upload">Upload</button>
-                <button id="cancelar">Cancelar</button>
-            </div>
+            <form method="post" action="{% url 'cargar_csv' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="file-drop-area">
+                    <label for="file">Cargar archivo</label>
+                    <input type="file" id="file" name="archivo_csv" class="file" accept=".csv">
+                    <input type="hidden" name="nombre_archivo" id="nombre_archivo">
+                    <button type="submit" id="upload">Upload</button>
+                    <button id="cancelar">Cancelar</button>
+                </div>
+            </form>
+
+            <script>
+                // Obtener el nombre del archivo y almacenarlo en el campo oculto
+                document.querySelector('input[type="file"]').addEventListener('change', function() {
+                    document.getElementById('nombre_archivo').value = this.files[0].name;
+                });
+            </script>
+            
         </div>
     </main>
 </body>
