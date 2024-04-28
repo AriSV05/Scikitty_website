@@ -17,7 +17,7 @@ body {
     overflow: hidden;
 }
 
-
+/* Header and Menu */
 header {
     display: flex;
 
@@ -40,27 +40,6 @@ header img {
     width: 40px;
     height: 40px;
     margin-left: 10px;
-}
-
-main {
-    display: grid;
-    grid-template-columns: auto 1fr; /* Columna del menú y columna del contenido */
-}
-
-#content {
-    text-align: center;
-    margin-left: -200px;
-    margin-top: 65px;
-}
-
-#content h1 {
-    margin-bottom: 20px;
-}
-
-
-#container {
-    display: flex;
-    min-height: 100vh;
 }
 
 #menu {
@@ -89,6 +68,39 @@ main {
     color: white;
     margin-bottom: 5px; /* Reducimos el margen inferior entre los divs */
 }
+
+/* binario_binario.html */
+
+main {
+    display: grid;
+    grid-template-columns: auto 1fr; /* Columna del menú y columna del contenido */
+}
+
+#content {
+    text-align: center;
+    margin-left: -200px;
+    margin-top: 65px;
+}
+
+#content h1 {
+    margin-bottom: 20px;
+}
+
+
+#container {
+    display: flex;
+    min-height: 100vh;
+}
+
+h2 {
+    margin-bottom: 50px;
+}
+
+select {
+    margin-bottom: 70px;
+}
+
+
 
 
 
