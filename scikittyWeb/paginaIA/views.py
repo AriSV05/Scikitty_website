@@ -1,4 +1,3 @@
-from django.http import HttpResponseRedirect
 import requests
 
 from django.shortcuts import render
@@ -8,30 +7,38 @@ def home(request):
     return render(request, 'home.html')
 
 def binario_binario(request):
-    return render(request, 'binario_binario.html')
+    response = requests.get('http://127.0.0.1:8001/cargar_previos')
+
+    if response.status_code == 200:
+        csv_list = response.json()
+
+    return render(request, 'binario_binario.html',{'csv_list':csv_list})
 
 def model_details(request, model_name):
+    model_name = request.GET.get('modelo')
     return render(request, 'model_details.html',{'model_name': model_name})
 
-def cargar_csv(request):
+def loaded_model(request):
+    form_model_name = request.POST.get('modelo')
+
+    return render(request, 'model_details.html',{'model_name':form_model_name})
+
+def guardar_csv(request):
     if request.method == 'POST':
-        # Obtener el archivo CSV cargado por el usuario
+
         archivo_csv = request.FILES['archivo_csv']
         nombre_archivo = archivo_csv.name
 
-        # URL del servidor remoto
-        url = 'http://127.0.0.1:8001/analizar_csv'
+        url = 'http://127.0.0.1:8001/guardar_csv'
 
-        # Crear un diccionario con el archivo adjunto
         archivos = {'archivo': archivo_csv}
         archivos['nombre_archivo'] = nombre_archivo
 
-        # Hacer la solicitud POST al servidor remoto con el archivo adjunto
+
         respuesta = requests.post(url, files=archivos)
 
-        # Verificar el estado de la respuesta
         if respuesta.status_code == 200:
-            return HttpResponseRedirect(f'/model_details/{nombre_archivo}')
+            return render(request, 'model_details.html',{'model_name':nombre_archivo})
         else:
             mensaje = "Hubo un error al enviar el archivo al servidor remoto."
 
@@ -46,7 +53,6 @@ def get_image_tree(request):
 
         url = 'http://127.0.0.1:8001/image_tree'
 
-        # Hacer la solicitud POST al servidor remoto con el archivo adjunto
         response = requests.post(url, data=archivo_csv)
 
         path = './paginaIA/static/images/tree_image.png'

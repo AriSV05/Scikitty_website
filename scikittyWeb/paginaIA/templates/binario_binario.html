@@ -15,27 +15,28 @@
         <div id="content">
             <h2>atributo-binario target-binario</h2>
             <div class="seleccionarModelo">
-                <select id="listaModelos">
-                    <option value="" disabled selected>Cargar modelo previo</option>
-                    <!-- Options will be loaded dynamically -->
-                </select>
-                <button id="cargarPrev">Cargar</button>
+                <form method="post" action="{% url 'loaded_model' %}">
+                    {% csrf_token %}
+                    <select id="listaModelos" name="modelo" >
+                        {% for modelo in csv_list %}
+                            <option value="{{ modelo }}">{{ modelo }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" id="cargarPrev">Cargar</button>
+                </form>
             </div>
-            <form class="cargar" method="post" action="{% url 'cargar_csv' %}" enctype="multipart/form-data">
-                <h3 class="tituloCargar">Cargar archivo</h3>
+            <h3 class="tituloCargar">Cargar archivo</h3>
+            <form class="cargar" method="post" action="{% url 'guardar_csv' %}" enctype="multipart/form-data">
+                {% csrf_token %}
                 <label for="images" class="drop-container" id="dropcontainer">
                     <span class="drop-title">Drop files here</span>
                     or
                     <input type="file" id="file" class="file" name="archivo_csv" accept=".csv" required>
                 </label>
                 <button class="buttonCargar" id="cancelar">Cancelar</button>
-                <button class="buttonCargar" id="upload" type="submit">Upload</button>
+                <button type="submit" class="buttonCargar" id="upload" >Upload</button>
             </form>
-            <!-- <form method="get" action="{% url 'get_image_tree' %}" enctype="multipart/form-data">
-                {% csrf_token %}<button type="submit">See</button></form> 
-                <img src="/static/images/tree_image.png" class="tree_image">-->  
         </div>
     </main>
-    <script src="{% static 'app.js' %}"></script>
 </body>
 </html>

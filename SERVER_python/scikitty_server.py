@@ -1,4 +1,5 @@
-from flask import Flask, request, send_file
+import os
+from flask import Flask, jsonify, request, send_file
 import scikitty_funtions as sk
 
 app = Flask(__name__)
@@ -7,14 +8,22 @@ app = Flask(__name__)
 def inicio():
     return "Scikitty server funcionando!"
 
-@app.route('/analizar_csv', methods=['POST'])
-def analizar_csv():
+@app.route('/guardar_csv', methods=['POST'])
+def guardar_csv():
     archivo_csv = request.files['archivo']
     nombre_archivo = archivo_csv.filename
 
     archivo_csv.save(f'./demos/{nombre_archivo}')
 
     return "Archivo CSV recibido y procesado correctamente"
+
+@app.route('/cargar_previos', methods=['GET'])
+def cargar_previos():
+    ruta_carpeta = './demos' 
+    
+    nombres_archivos = os.listdir(ruta_carpeta)
+
+    return jsonify(nombres_archivos)
 
 @app.route('/image_tree', methods=['POST'])
 def image_tree():
