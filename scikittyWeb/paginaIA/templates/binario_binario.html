@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SciKitty - Binario-Binario</title>
     <link rel="stylesheet" href="{% static '/css/styles.css' %}">
+    <link rel="stylesheet" href="{% static '/css/binario.css' %}">
 </head>
 <body>
     {% include 'header.html' %}
@@ -13,20 +14,25 @@
         {% include 'menu.html' %}
         <div id="content">
             <h2>atributo-binario target-binario</h2>
-            <div>
+            <div class="seleccionarModelo">
                 <select id="listaModelos">
                     <option value="" disabled selected>Cargar modelo previo</option>
                     <!-- Options will be loaded dynamically -->
                 </select>
-                <button id="cargarPrev">Cargar Modelo</button>
+                <button id="cargarPrev">Cargar</button>
             </div>
-            <div class="file-drop-area">
-                <label for="file">Cargar archivo</span>
-                <input type="file" id="file" class="file">
-                <button id="upload">Upload</button>
-                <button id="cancelar">Cancelar</button>
+            <div class="cargar">
+                <h3 class="tituloCargar">Cargar archivo</h3>
+                <label for="images" class="drop-container" id="dropcontainer">
+                    <span class="drop-title">Drop files here</span>
+                    or
+                    <input type="file" id="file" class="file" required>
+                </label>
+                <button class="buttonCargar" id="cancelar">Cancelar</button>
+                <button class="buttonCargar" id="upload">Upload</button>
             </div>
         </div>
     </main>
+    <script src="{% static 'app.js' %}"></script>
 </body>
 </html>
