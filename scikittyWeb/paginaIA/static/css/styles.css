@@ -270,8 +270,11 @@ button {
     margin-bottom: 45px;
 }
   
+.detail_buttons form{
+    display: inline-block;
+}
 
-
-
-
+.tree_image{
+    width: 120vh;
+}
 

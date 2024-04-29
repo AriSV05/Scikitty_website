@@ -1,0 +1,37 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SciKitty - Binario-Binario</title>
+    <link rel="stylesheet" href="{% static '/css/styles.css' %}">
+    <link rel="stylesheet" href="{% static '/css/binario.css' %}">
+</head>
+<body>
+    {% include 'header.html' %}
+    <main>
+        {% include 'menu.html' %}
+        <div id="content">
+            <h2 class="nombreArchivo">Detalles del modelo para {{ model_name }}</h2>
+            <div class="detail_buttons">
+                <form>
+                    <button class="buttonCargar" id="metricas" type="submit">Metricas</button>
+                </form>
+                <form>
+                    <button class="buttonCargar"id="ROC" type="submit">ROC</button>
+                </form>
+                <form method="post" action="{% url 'get_image_tree' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name='model_name' value="{{model_name}}">
+                    <button class="buttonCargar" id="tree" type="submit">Tree</button>
+                </form>
+                
+            </div>
+            <div id="model_details" >
+                <img class="tree_image" src={{detail}}>
+            </div>
+        </div>
+</body>
+</html>
