@@ -15,7 +15,7 @@
         <div id="content">
             <h2>atributo-binario target-binario</h2>
             <div class="seleccionarModelo">
-                <form method="post" action="{% url 'loaded_model' %}">
+                <form method="post" action="{% url 'load_tree' %}">
                     {% csrf_token %}
                     <select id="listaModelos" name="modelo" >
                         {% for modelo in csv_list %}
@@ -26,7 +26,7 @@
                 </form>
             </div>
             <h3 class="tituloCargar">Cargar archivo</h3>
-            <form class="cargar" method="post" action="{% url 'guardar_csv' %}" enctype="multipart/form-data">
+            <form class="cargar" method="post" action="{% url 'create_tree' %}" enctype="multipart/form-data">
                 {% csrf_token %}
                 <label for="images" class="drop-container" id="dropcontainer">
                     <span class="drop-title">Drop files here</span>

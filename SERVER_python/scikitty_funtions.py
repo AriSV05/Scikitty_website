@@ -18,7 +18,7 @@ def read_csv_with_column_names(filename):
             yield line.strip().split(',')
 
 def import_model(filename): #cargar modelo
-    modelo = joblib.load(f'./models/{filename}.pkl')
+    modelo = joblib.load(f'./models/{filename}')
     return modelo
 
 def save_model(model, name, directory="./models"):

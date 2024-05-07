@@ -157,16 +157,16 @@ class DecisionTreeClassifier():
             if (isinstance(tree.threshold, int) or isinstance(tree.threshold, float)):#Numerico
                 print(data.columns[tree.feature_index], "<=", tree.threshold, "?", "{Gain:",tree.info_gain, " Samples:", tree.samples,"}")
                 print("%sleft:" % (indent), end="")
-                self.print_tree(tree.left, indent + indent, data,nodes=nodes)
+                self.print_tree(tree.left, indent + indent, data)
                 print("%sright:" % (indent), end="")
-                self.print_tree(tree.right, indent + indent, data,nodes=nodes)
+                self.print_tree(tree.right, indent + indent, data)
 
             else: #categorico
                 print(data.columns[tree.feature_index], "==", tree.threshold, "?", "{Gain:",tree.info_gain, " Samples:", tree.samples,"}")
                 print("%sleft:" % (indent), end="")
-                self.print_tree(tree.left, indent + indent, data,nodes=nodes)
+                self.print_tree(tree.left, indent + indent, data)
                 print("%sright:" % (indent), end="")
-                self.print_tree(tree.right, indent + indent, data,nodes=nodes)
+                self.print_tree(tree.right, indent + indent, data)
 
     
     def BFS_list(self,data= None):
