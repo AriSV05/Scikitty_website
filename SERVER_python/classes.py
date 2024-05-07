@@ -1,4 +1,5 @@
 import numpy as np
+import queue
 
 class Node():
     def __init__(self, feature_index=None, threshold=None, left=None, right=None, info_gain=None, samples=None, value=None, rest_samples=None):
@@ -36,7 +37,7 @@ class DecisionTreeClassifier():
         #print(np.shape(X))
         
         # split until stopping conditions are met
-        if num_samples>=self.min_samples_split and curr_depth<=self.max_depth:  #aqui se podria quitar min
+        if num_samples>=self.min_samples_split and curr_depth<=self.max_depth: 
             # find the best split
             best_split = self.get_best_split(dataset, num_samples, num_features)
             # check if information gain is positive
@@ -149,23 +150,50 @@ class DecisionTreeClassifier():
         if not tree:
             tree = self.root
 
-        if tree.value is not None:
+        if tree.value is not None:  
             print(tree.value, tree.rest_samples)
 
         else:
             if (isinstance(tree.threshold, int) or isinstance(tree.threshold, float)):#Numerico
-                print(data.columns[tree.feature_index], "<=", tree.threshold, "?", tree.info_gain)
+                print(data.columns[tree.feature_index], "<=", tree.threshold, "?", "{Gain:",tree.info_gain, " Samples:", tree.samples,"}")
                 print("%sleft:" % (indent), end="")
-                self.print_tree(tree.left, indent + indent, data)
+                self.print_tree(tree.left, indent + indent, data,nodes=nodes)
                 print("%sright:" % (indent), end="")
-                self.print_tree(tree.right, indent + indent, data)
-            else:
+                self.print_tree(tree.right, indent + indent, data,nodes=nodes)
+
+            else: #categorico
                 print(data.columns[tree.feature_index], "==", tree.threshold, "?", "{Gain:",tree.info_gain, " Samples:", tree.samples,"}")
                 print("%sleft:" % (indent), end="")
-                self.print_tree(tree.left, indent + indent, data)
+                self.print_tree(tree.left, indent + indent, data,nodes=nodes)
                 print("%sright:" % (indent), end="")
-                self.print_tree(tree.right, indent + indent, data)
+                self.print_tree(tree.right, indent + indent, data,nodes=nodes)
+
     
+    def BFS_list(self,data= None):
+        nodes=[]
+        tree = self.root
+        if tree is None:
+            return
+        
+        cola = queue.Queue()
+        cola.put(tree)
+        while not cola.empty():
+            tmp = cola.get()
+            
+            if(tmp.threshold is not None):
+                question = " "+data.columns[tmp.feature_index] + " <= " + str(tmp.threshold) + " ?"
+                nodes.append(question)
+            else:
+                nodes.append(tmp.value)
+
+            if tmp.left is not None:
+                cola.put(tmp.left)
+            if tmp.right is not None:
+                cola.put(tmp.right)
+                
+        return nodes
+
+
     def fit(self, X, Y):
         ''' function to train the tree '''
         
@@ -247,3 +275,48 @@ class Metrics():
         if precision + recall == 0:
             return 0
         return 2 * (precision * recall) / (precision + recall)
+
+    def confusion_matrix(y_true, y_pred):
+        ''' Function to calculate confusion matrix '''
+    
+        # Convertir a arrays NumPy unidimensionales
+        y_true2 = np.array(y_true).flatten()
+        
+        # Encontrar las clases únicas presentes en las etiquetas verdaderas y las predicciones
+        classes = np.unique(np.concatenate((y_true2, y_pred)))
+
+        # Inicializar la matriz de confusión como una matriz numpy
+        matrix = np.zeros((len(classes), len(classes)), dtype=int)
+        
+        # Llenar la matriz de confusión
+        for true, pred in zip(y_true, y_pred):
+            true_idx = np.where(classes == true)[0][0]
+            pred_idx = np.where(classes == pred)[0][0]
+            matrix[true_idx, pred_idx] += 1
+        
+        # Crear un DataFrame de Pandas para la matriz de confusión
+        conf_df = pd.DataFrame(matrix, index=classes, columns=classes)
+        
+        label_1 = classes[1] if 1 in classes else classes[0]
+        label_2 = classes[0] if label_1 == classes[1] else classes[1]
+        
+        # Agregar etiquetas a la matriz
+        conf_df.rename({label_1: label_1, label_2: label_2}, axis=0, inplace=True)
+        conf_df.rename({label_1: label_1, label_2: label_2}, axis=1, inplace=True)
+        
+        return conf_df
+    
+    def img_confusion_matrix(self, y_true, y_pred):
+        matrix = self.confusion_matrix(y_true, y_pred)
+        plt.figure(figsize=(8, 6))
+        plt.imshow(confusion_matrix, interpolation='nearest', cmap=plt.cm.Blues)
+        plt.title('Confusion Matrix')
+        plt.colorbar()
+        tick_marks = range(len(confusion_matrix))
+        plt.xticks(tick_marks, confusion_matrix.columns, rotation=45)
+        plt.yticks(tick_marks, confusion_matrix.index)
+        plt.tight_layout()
+        plt.ylabel('True label')
+        plt.xlabel('Predicted label')
+        plt.savefig("./image_model/Confusion_Matrix.png")  #TODO: PONER DONDE SE GUARDA
+        plt.show()
