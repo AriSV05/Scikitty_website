@@ -1,83 +1,136 @@
-from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor, plot_tree
-from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
+from sklearn.tree import plot_tree
 import matplotlib.pyplot as plt
 import joblib
 import numpy as np
 import pandas as pd
 import os
+import random
+from classes import DecisionTreeClassifier as tree
 
+def read_csv_with_column_names(filename):
+    with open('./demos/'+ filename, 'r') as file:
+        # Leer la primera línea para obtener los nombres de las columnas
+        col_names = file.readline().strip().split(',')
+        yield col_names
+        # Leer el resto del archivo línea por línea
+        for line in file:
+            yield line.strip().split(',')
 
-def read_csv(csv_name):
-    return pd.read_csv('./demos/' + csv_name)
+def import_model(filename): 
+    #Cargar modelo
+    modelo = joblib.load(f'./models/{filename}')
+    return modelo
 
-def is_classifier(y):
-    unique_values = np.unique(y)
-    if len(unique_values) == 2 or y.dtype == np.object:
-        return True
-    return False
-
-
-def decide_and_train_tree(X, y, max_depth=None):
-    if is_classifier(y):
-        print("Using DecisionTreeClassifier")
-        model = DecisionTreeClassifier(max_depth=max_depth)
-    else:
-        print("Using DecisionTreeRegressor")
-        model = DecisionTreeRegressor(max_depth=max_depth)
-
-    model.fit(X, y)
-
-    return model
-
-def getX_Y(df):
-    X = df.drop(columns=[df.columns[-1]]) # Excluye la variable objetivo
-    y = df[df.columns[-1]]
-    # Codifica si es categórica usando one-hot encoding
-    if any(X.dtypes == 'object'):
-        #revisar
-        X_one_hot = pd.get_dummies(X)
-        if y.dtype == 'object':
-            le = LabelEncoder()
-            y = le.fit_transform(y)
-            return X_one_hot, y
-        return X_one_hot, y
-    return X, y
-        
-def splitX_Y(X, y):
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)  # 30% para prueba
-
-    return X_train, X_test, y_train, y_test
-
-
-def save_model(model, name, directory="."):
+def save_model(model, name, directory="./models"):
+    #Guardar el modelo
     if not os.path.exists(directory):
         os.makedirs(directory)
         
     file_path = os.path.join(directory, name + '.pkl')
     joblib.dump(model, file_path)
 
-def image_tree_model(X, y, model):
-    feature_cols = X.columns  # Nombres de las características usadas en el modelo
-    class_names = [str(label) for label in pd.Series(y).unique()]  # Etiquetas únicas de la variable objetivo
 
-    plt.figure(figsize=(20,10))
-    plot_tree(model, feature_names=feature_cols, class_names=class_names, filled=True)
-    plt.savefig('./image_tree_model/tree.png')
+def train_test_split(X, Y, test_size=0.3, random_state=42):
+    #Hacer split al dataset en train y test
+    random.seed(random_state)
+    indices = list(range(len(X)))
+    random.shuffle(indices)
+    split_index = int((1 - test_size) * len(X))
+    train_indices = indices[:split_index]
+    test_indices = indices[split_index:]
+    
+    X_train, X_test = X[train_indices], X[test_indices]
+    Y_train, Y_test = Y[train_indices], Y[test_indices]
+    
+    return X_train, X_test, Y_train, Y_test
 
 
-def import_model(name):
-    return joblib.load(name +'.pkl')
+    
 
-def cal_metrics(x_test, y_test, model):
-    accuracy, recall, precision, f_score = [], [], [], []
-    predictions = model.predict(x_test)
+# ----------------------------------------METRICAS---------------------------------------------------------
+def accuracy_score(y_test, y_pred):
+    correct = 0
+    for true, pred in zip(y_test, y_pred):
+        if true == pred:
+            correct += 1
+    accuracy = correct / len(y_test)
+    return accuracy
 
-    accuracy = accuracy_score(y_test, predictions)
-    recall = recall_score(y_test, predictions)
-    precision = precision_score(y_test, predictions)
-    f_score = f1_score(y_test, predictions)
+def recall_score(y_test, y_pred, positive_class): 
+    true_positives = 0
+    actual_positives = 0
+        
+    for true, pred in zip(y_test, y_pred):
+        if true == positive_class:
+            actual_positives += 1
+            if pred == positive_class:
+                true_positives += 1
+                    
+    if actual_positives == 0:
+        return 0  # Si no hay muestras positivas en los datos reales, el recall es 0
+        
+    recall = true_positives / actual_positives
+    return recall
 
-    return accuracy, recall, precision, f_score
+def precision_score(y_test, y_pred, positive_class):
+    true_positives = 0
+    false_positives = 0
 
+    for true, pred in zip(y_test, y_pred):
+        if pred == positive_class:
+            if true == positive_class:
+                true_positives += 1
+            else:
+                false_positives += 1  
+
+    if (true_positives + false_positives) == 0:
+        return 0
+    else:
+        return true_positives / (true_positives + false_positives)
+    
+def f1_score(precision, recall):
+    if precision + recall == 0:
+        return 0
+    return 2 * (precision * recall) / (precision + recall)
+
+def confusion_matrix(y_test, y_pred):
+    # Convertir a arrays NumPy unidimensionales
+    y_test_uni = np.array(y_test).flatten()
+        
+    # Encontrar las clases únicas presentes en las etiquetas verdaderas y las predicciones
+    classes = np.unique(np.concatenate((y_test_uni, y_pred)))
+
+    # Inicializar la matriz de confusión como una matriz numpy
+    matrix = np.zeros((len(classes), len(classes)), dtype=int)
+        
+    # Llenar la matriz de confusión
+    for true, pred in zip(y_test, y_pred):
+        true_idx = np.where(classes == true)[0][0]
+        pred_idx = np.where(classes == pred)[0][0]
+        matrix[true_idx, pred_idx] += 1
+        
+    # Crear un DataFrame de Pandas para la matriz de confusión
+    conf_df = pd.DataFrame(matrix, index=classes, columns=classes)
+        
+    label_1 = classes[1] if 1 in classes else classes[0]
+    label_2 = classes[0] if label_1 == classes[1] else classes[1]
+        
+    # Agregar etiquetas a la matriz
+    conf_df.rename({label_1: label_1, label_2: label_2}, axis=0, inplace=True)
+    conf_df.rename({label_1: label_1, label_2: label_2}, axis=1, inplace=True)
+        
+    return conf_df
+    
+def img_confusion_matrix(y_test, y_pred):
+    matrix = confusion_matrix(y_test, y_pred)
+    plt.figure(figsize=(8, 6))
+    plt.imshow(matrix, interpolation='nearest', cmap=plt.cm.Blues)
+    plt.title('Confusion Matrix')
+    plt.colorbar()
+    tick_marks = range(len(matrix))
+    plt.xticks(tick_marks, matrix.columns, rotation=45)
+    plt.yticks(tick_marks, matrix.index)
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    plt.savefig("./image_model/Confusion_Matrix.png")  

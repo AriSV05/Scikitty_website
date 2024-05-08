@@ -1,3 +1,21 @@
 #bin-bin {
     background-color: #1928b4 !important;
 }
+
+.message{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.inp_cont{
+    width: 1vh;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+}
+
+.inp_cont input{
+    justify-content: start;
+}

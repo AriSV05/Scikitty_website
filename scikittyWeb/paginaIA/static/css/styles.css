@@ -274,7 +274,16 @@ button {
     display: inline-block;
 }
 
-.tree_image{
-    width: 120vh;
+.image_matrix{
+    width: 63vh;
 }
 
+.image_tree{
+    max-height: 58vh;
+}
+
+.select_altura{
+    margin-bottom: 0 !important;
+    width: 10vh;
+    text-align: center;
+}

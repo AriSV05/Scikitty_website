@@ -21,11 +21,15 @@ from paginaIA import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
-    path('loaded_model/', views.loaded_model, name='loaded_model'),
     path('model_details/<str:model_name>/', views.model_details, name='model_details'),
     path('binario_binario/', views.binario_binario, name='binario_binario'),
-    path('guardar_csv/', views.guardar_csv, name='guardar_csv'),
     path('get_image_tree/', views.get_image_tree, name='get_image_tree'),
+    path('get_positives/', views.get_positives, name='get_positives'),
+    path('get_image_matrix/', views.get_image_matrix, name='get_image_matrix'),
+    path('create_tree/', views.create_tree, name='create_tree'),
+    path('load_tree/', views.load_tree, name='load_tree'),
+    path('error/', views.error, name='error'),
+    path('get_image_ROC/', views.get_image_ROC, name='get_image_ROC'),
 ]
 
 # from django.contrib.staticfiles.urls import staticfiles_urlpatterns

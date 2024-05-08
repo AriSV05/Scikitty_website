@@ -16,12 +16,19 @@
         <div id="content">
             <h2 class="nombreArchivo">Detalles del modelo para {{ model_name }}</h2>
             <div class="detail_buttons">
-                <form>
+
+                <form method="post" action="{% url 'get_positives' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name='model_name' value="{{model_name}}">
                     <button class="buttonCargar" id="metricas" type="submit">Metricas</button>
                 </form>
-                <form>
+
+                <form method="post" action="{% url 'get_image_ROC' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name='model_name' value="{{model_name}}">
                     <button class="buttonCargar"id="ROC" type="submit">ROC</button>
                 </form>
+
                 <form method="post" action="{% url 'get_image_tree' %}" enctype="multipart/form-data">
                     {% csrf_token %}
                     <input type="hidden" name='model_name' value="{{model_name}}">
@@ -29,9 +36,10 @@
                 </form>
                 
             </div>
-            <div id="model_details" >
-                <img class="tree_image" src={{detail}}>
+            <div id="details" >
+                 {{ details | safe }}
             </div>
+           
         </div>
 </body>
 </html>

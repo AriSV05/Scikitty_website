@@ -1,45 +1,149 @@
 import os
+import pandas as pd
 from flask import Flask, jsonify, request, send_file
+import numpy as np
 import scikitty_funtions as sk
+from classes import DecisionTreeClassifier
 
 app = Flask(__name__)
+
+y_test_saved = None
+x_test_saved = None
+classifier_saved = None
+uniques_targets_saved = None
 
 @app.route('/')
 def inicio():
     return "Scikitty server funcionando!"
 
-@app.route('/guardar_csv', methods=['POST'])
-def guardar_csv():
-    archivo_csv = request.files['archivo']
-    nombre_archivo = archivo_csv.filename
-
-    archivo_csv.save(f'./demos/{nombre_archivo}')
-
-    return "Archivo CSV recibido y procesado correctamente"
-
 @app.route('/cargar_previos', methods=['GET'])
 def cargar_previos():
-    ruta_carpeta = './demos' 
+    ruta_carpeta = './models'#TODO 
     
     nombres_archivos = os.listdir(ruta_carpeta)
 
     return jsonify(nombres_archivos)
 
+@app.route('/create_tree', methods=['POST'])
+def create_tree():
+    global y_test_saved, classifier_saved, x_test_saved, uniques_targets_saved
+
+    archivo_csv = request.files['archivo']
+    nombre_archivo = archivo_csv.filename
+
+    altura = int(request.form['altura'])
+
+    archivo_csv.save(f'./demos/{nombre_archivo}')
+
+    csv_generator = sk.read_csv_with_column_names(nombre_archivo)
+    col_names = next(csv_generator)  # Obtener los nombres de las columnas
+    data = pd.DataFrame(csv_generator, columns=col_names)
+    X = data.iloc[:, :-1].values
+    Y = data.iloc[:, -1].values.reshape(-1,1)
+
+    X_train, X_test, Y_train, Y_test = sk.train_test_split(X, Y)
+
+    classifier = DecisionTreeClassifier(min_samples_split= 2, max_depth=altura)
+    classifier.fit(X_train,Y_train)
+    
+    classifier_saved = classifier
+
+    y_test_saved = Y_test
+    x_test_saved =  X_test
+
+
+    classifier.print_tree(data=data) #impon en consola
+    classifier.image_tree_model(Y, data) #png
+
+    model_name = nombre_archivo.split(".")[0]
+
+    sk.save_model(classifier_saved, model_name)
+
+    targets = np.array(Y).flatten()
+    uniques_targets = np.unique(targets)
+    uniques_targets_saved = uniques_targets
+
+    return "Modelo correctamente"
+
+
+@app.route('/load_tree', methods=['POST'])
+def load_tree():
+    global y_test_saved, classifier_saved, x_test_saved, uniques_targets_saved
+
+    model_name = request.form['form_model_name']
+    csv_name = model_name.split(".")[0]+".csv"
+
+    csv_generator = sk.read_csv_with_column_names(csv_name)
+    col_names = next(csv_generator)  # Obtener los nombres de las columnas
+    data = pd.DataFrame(csv_generator, columns=col_names)
+    X = data.iloc[:, :-1].values
+    Y = data.iloc[:, -1].values.reshape(-1,1)
+
+    _, X_test, _, Y_test = sk.train_test_split(X, Y)
+    
+    classifier_saved = sk.import_model(model_name)
+
+    y_test_saved = Y_test
+    x_test_saved =  X_test
+
+    classifier_saved.print_tree(data=data) #impresion en consola
+    classifier_saved.image_tree_model(Y, data) #png
+    
+    targets = np.array(Y).flatten()
+    uniques_targets = np.unique(targets)
+    uniques_targets_saved = uniques_targets
+
+    return "Modelo correctamente"
+
+@app.route('/select_positives', methods=['GET'])
+def select_positives():
+    global uniques_targets_saved
+
+    targets = {
+        "one":uniques_targets_saved[0],
+        "two":uniques_targets_saved[1]
+    }
+
+    return jsonify(targets)
+    
+
+@app.route('/metrics', methods=['POST'])
+def metrics():
+    global y_test_saved, x_test_saved, classifier_saved
+
+    y_pred = classifier_saved.predict(x_test_saved)
+ 
+    positive = request.form['positive']
+
+    accuracy = sk.accuracy_score(y_test_saved, y_pred)
+    precision = sk.precision_score(y_test_saved, y_pred, positive)
+    recall = sk.recall_score(y_test_saved, y_pred, positive)
+    f1 = sk.f1_score(precision, recall)
+
+    sk.img_confusion_matrix(y_test_saved, y_pred)
+
+    results = {
+        "Accuracy":accuracy,
+        "Precision":precision,
+        "recall":recall,
+        "f1":f1
+    }
+
+    return jsonify(results)
+
+@app.route('/metrics_image', methods=['GET'])
+def metrics_image():
+    matrix_route = "./image_model/Confusion_Matrix.png"
+
+    return send_file(matrix_route, mimetype='image/png')
+
+
 @app.route('/image_tree', methods=['POST'])
 def image_tree():
-    data = request.form['model_name']
 
-    df = sk.read_csv(data)
-    X,y = sk.getX_Y(df)
-    X_train, X_test, y_train, y_test = sk.splitX_Y(X,y)
+    tree_route = "./image_model/TreeDecision.png"
 
-    model = sk.decide_and_train_tree(X_train,y_train)
-
-    #accuracy, recall, precision, f_score = sk.cal_metrics(X_test,y_test, model)
-
-    sk.image_tree_model(X,y,model)
-
-    return send_file("./image_tree_model/tree.png", mimetype='image/png')
+    return send_file(tree_route, mimetype='image/png')
 
 if __name__ == '__main__':
     app.run(debug=True, port=8001)
