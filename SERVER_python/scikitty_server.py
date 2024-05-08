@@ -43,7 +43,7 @@ def create_tree():
 
     X_train, X_test, Y_train, Y_test = sk.train_test_split(X, Y)
 
-    classifier = DecisionTreeClassifier(min_samples_split= 2, max_depth=1)
+    classifier = DecisionTreeClassifier(min_samples_split= 2, max_depth=altura)
     classifier.fit(X_train,Y_train)
     
     classifier_saved = classifier
@@ -51,8 +51,9 @@ def create_tree():
     y_test_saved = Y_test
     x_test_saved =  X_test
 
-    classifier.print_tree(data=data) #impresion en consola
-    #classifier_saved.image_tree_model(Y, data) #png
+
+    classifier.print_tree(data=data) #impon en consola
+    classifier.image_tree_model(Y, data) #png
 
     model_name = nombre_archivo.split(".")[0]
 

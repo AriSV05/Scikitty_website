@@ -8,6 +8,10 @@ from django.middleware.csrf import get_token
 def home(request):
     return render(request, 'home.html')
 
+def error(request, mensaje):
+    mensaje = request.GET.get('mensaje')
+    return render(request, 'error.html',{'mensaje':mensaje})
+
 def binario_binario(request):
     response = requests.get('http://127.0.0.1:8001/cargar_previos')
 
@@ -34,9 +38,9 @@ def load_tree(request):
             if respuesta.status_code == 200:
                 return render(request, 'model_details.html',{'model_name':form_model_name})
             else:
-                mensaje = "Hubo un error al enviar el archivo al servidor remoto."
+                mensaje = "Hubo un error al enviar los datos al servidor remoto."
 
-    return render(request, 'binario_binario.html', {'mensaje': mensaje})
+    return render(request, 'error.html',{'mensaje': mensaje})
 
 def create_tree(request):
     if request.method == 'POST':
@@ -60,7 +64,7 @@ def create_tree(request):
         else:
             mensaje = "Hubo un error al enviar el archivo al servidor remoto."
 
-        return render(request, 'binario_binario.html', {'mensaje': mensaje})
+        return render(request, 'error.html', {'mensaje': mensaje})
 
 def get_image_tree(request):
     if request.method == 'POST':
@@ -73,13 +77,19 @@ def get_image_tree(request):
 
         response = requests.post(url, data=archivo_csv)
 
-        path = './paginaIA/static/images/tree_image.png'
-        with open(path, 'wb') as f:
-            f.write(response.content)
+        if response.status_code == 200:
 
-    details = """<br><img src="/static/images/tree_image.png" class="image_tree"></img> """
+            path = './paginaIA/static/images/tree_image.png'
+            with open(path, 'wb') as f:
+                f.write(response.content)
+            
+            details = """<br><img src="/static/images/tree_image.png" class="image_tree"></img> """
 
-    return render(request, 'model_details.html',{'details': details,'model_name': form_model_name})
+            return render(request, 'model_details.html',{'details':details,'model_name':form_model_name})
+
+        mensaje = "Hubo un error al cargar la imagen."
+
+    return render(request, 'error.html',{'mensaje': mensaje})
 
 def get_image_matrix(request):
     if request.method == 'POST':
@@ -115,8 +125,9 @@ def get_image_matrix(request):
         if respuesta.status_code == 200:
             return render(request, 'model_details.html',{'details':details,'model_name':form_model_name})
         else:
-            mensaje = "Hubo un error al enviar el archivo al servidor remoto."
-        return mensaje
+           mensaje = "Hubo un error al cargar la imagen."
+
+    return render(request, 'error.html',{'mensaje': mensaje})
 
 def get_positives(request):
     if request.method == 'POST':
@@ -129,36 +140,40 @@ def get_positives(request):
         if response.status_code == 200:
             positive = response.json()
 
-        template_string =   """
-                            <br><br><br>
-                            <h4>Selecciona el target positivo del modelo</h4>
-                            <form method="post" action="{{ url_get_image_matrix }}" class="message">
-                                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-                                <input type="hidden" name='model_name' value="{{model_name}}">
-                                <br>
-                                <div class="inp_cont">
-                                    <input type="radio" id="option1" name="option" value="{{ positive.one }}">
-                                    <label for="option1">{{ positive.one }}</label>
-                                </div>
-                                <div class="inp_cont">
-                                    <input type="radio" id="option2" name="option" value="{{ positive.two }}">
-                                    <label for="option2">{{ positive.two }}</label>
-                                </div>
-                                <br><br>
-                                <button id="ok-button">OK</button>
-                            </form>
-                            """
+            template_string =   """
+                                <br><br><br>
+                                <h4>Selecciona el target positivo del modelo</h4>
+                                <form method="post" action="{{ url_get_image_matrix }}" class="message">
+                                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                                    <input type="hidden" name='model_name' value="{{model_name}}">
+                                    <br>
+                                    <div class="inp_cont">
+                                        <input type="radio" id="option1" name="option" value="{{ positive.one }}">
+                                        <label for="option1">{{ positive.one }}</label>
+                                    </div>
+                                    <div class="inp_cont">
+                                        <input type="radio" id="option2" name="option" value="{{ positive.two }}">
+                                        <label for="option2">{{ positive.two }}</label>
+                                    </div>
+                                    <br><br>
+                                    <button id="ok-button">OK</button>
+                                </form>
+                                """
 
-        template = Template(template_string)
-        context = Context({
-            'url_get_image_matrix': url_get_image_matrix,
-            'positive': positive,
-            'csrf_token': csrf_token,
-            'model_name': form_model_name
-        })
-        rendered_template = template.render(context)
+            template = Template(template_string)
+            context = Context({
+                'url_get_image_matrix': url_get_image_matrix,
+                'positive': positive,
+                'csrf_token': csrf_token,
+                'model_name': form_model_name
+            })
+            rendered_template = template.render(context)
 
-    return render(request, 'model_details.html',{'details': rendered_template,'model_name': form_model_name})
+            return render(request, 'model_details.html',{'details': rendered_template,'model_name': form_model_name})
+        
+    mensaje = "Hubo un error al cargar los datos."
+
+    return render(request, 'error.html',{'mensaje': mensaje})
 
 def get_image_ROC(request):
     if request.method == 'POST':

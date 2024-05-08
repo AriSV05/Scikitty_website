@@ -28,6 +28,7 @@ urlpatterns = [
     path('get_image_matrix/', views.get_image_matrix, name='get_image_matrix'),
     path('create_tree/', views.create_tree, name='create_tree'),
     path('load_tree/', views.load_tree, name='load_tree'),
+    path('error/', views.error, name='error'),
     path('get_image_ROC/', views.get_image_ROC, name='get_image_ROC'),
 ]
 

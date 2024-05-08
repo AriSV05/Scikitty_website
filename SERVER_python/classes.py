@@ -34,8 +34,7 @@ class DecisionTreeClassifier():
         num_samples, num_features = np.shape(X) # num_samples(row) y num_features(columns)
         
         #print(np.shape(X))
-        print(curr_depth)
-
+        
         #Nodos
         if num_samples>=self.min_samples_split and curr_depth<=self.max_depth: 
             best_split = self.get_best_decision_point(dataset, num_samples, num_features)
@@ -222,13 +221,12 @@ class DecisionTreeClassifier():
         if tree.value!=None: return tree.value
         feature_val = x[tree.feature_index]
         if (isinstance(feature_val, int) or isinstance(feature_val, float)):#Numerico
-            if feature_val<=tree.feature:
+            if feature_val<=tree.decision_point:
                 return self.make_prediction(x, tree.left)
             else:
                 return self.make_prediction(x, tree.right)
         else: #Categorico
-            if feature_val==tree.feature:
+            if feature_val==tree.decision_point:
                 return self.make_prediction(x, tree.left)
             else:
                 return self.make_prediction(x, tree.right)
-

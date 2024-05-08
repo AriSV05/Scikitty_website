@@ -1,0 +1,18 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SciKitty - Home</title>
+    <link rel="stylesheet" href="{% static '/css/styles.css' %}">
+</head>
+<body>
+    {% include 'header.html' %}
+    <main>
+        <h2>ERROR!</h2>
+        {{mensaje}}
+        <img src="\static\images\detective_cat.png">
+    </main>
+</body>
+</html>
