@@ -3,7 +3,7 @@ import pandas as pd
 from flask import Flask, jsonify, request, send_file
 import numpy as np
 import scikitty_funtions as sk
-from classes import DecisionTreeClassifier, Metrics
+from classes import DecisionTreeClassifier
 
 app = Flask(__name__)
 
@@ -31,6 +31,8 @@ def create_tree():
     archivo_csv = request.files['archivo']
     nombre_archivo = archivo_csv.filename
 
+    altura = int(request.form['altura'])
+
     archivo_csv.save(f'./demos/{nombre_archivo}')
 
     csv_generator = sk.read_csv_with_column_names(nombre_archivo)
@@ -41,7 +43,7 @@ def create_tree():
 
     X_train, X_test, Y_train, Y_test = sk.train_test_split(X, Y)
 
-    classifier = DecisionTreeClassifier(min_samples_split=3, max_depth=3)
+    classifier = DecisionTreeClassifier(min_samples_split= 2, max_depth=1)
     classifier.fit(X_train,Y_train)
     
     classifier_saved = classifier
@@ -50,6 +52,7 @@ def create_tree():
     x_test_saved =  X_test
 
     classifier.print_tree(data=data) #impresion en consola
+    #classifier_saved.image_tree_model(Y, data) #png
 
     model_name = nombre_archivo.split(".")[0]
 
@@ -83,6 +86,7 @@ def load_tree():
     x_test_saved =  X_test
 
     classifier_saved.print_tree(data=data) #impresion en consola
+    classifier_saved.image_tree_model(Y, data) #png
     
     targets = np.array(Y).flatten()
     uniques_targets = np.unique(targets)
@@ -107,18 +111,16 @@ def metrics():
     global y_test_saved, x_test_saved, classifier_saved
 
     y_pred = classifier_saved.predict(x_test_saved)
-
+ 
     positive = request.form['positive']
 
-    accuracy = Metrics.accuracy_score(y_test_saved, y_pred)
-    precision = Metrics.precision_score(y_test_saved, y_pred, positive)
-    recall = Metrics.recall_score(y_test_saved, y_pred, positive)
-    f1 = Metrics.f1_score(precision, recall)
-    #matriz png
+    accuracy = sk.accuracy_score(y_test_saved, y_pred)
+    precision = sk.precision_score(y_test_saved, y_pred, positive)
+    recall = sk.recall_score(y_test_saved, y_pred, positive)
+    f1 = sk.f1_score(precision, recall)
 
     sk.img_confusion_matrix(y_test_saved, y_pred)
 
-    matrix_route = "./image_model/Confusion_Matrix.png"
     results = {
         "Accuracy":accuracy,
         "Precision":precision,
@@ -126,13 +128,21 @@ def metrics():
         "f1":f1
     }
 
-    return jsonify(results), send_file(matrix_route, mimetype='image/jpeg')
+    return jsonify(results)
+
+@app.route('/metrics_image', methods=['GET'])
+def metrics_image():
+    matrix_route = "./image_model/Confusion_Matrix.png"
+
+    return send_file(matrix_route, mimetype='image/png')
 
 
 @app.route('/image_tree', methods=['POST'])
 def image_tree():
 
-    return
+    tree_route = "./image_model/TreeDecision.png"
+
+    return send_file(tree_route, mimetype='image/png')
 
 if __name__ == '__main__':
     app.run(debug=True, port=8001)

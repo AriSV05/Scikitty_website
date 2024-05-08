@@ -1,132 +1,119 @@
 import numpy as np
+from dsplot.tree import BinaryTree
 import queue
 
+
 class Node():
-    def __init__(self, feature_index=None, threshold=None, left=None, right=None, info_gain=None, samples=None, value=None, rest_samples=None):
-        ''' constructor ''' 
+    def __init__(self, feature_index=None, decision_point=None, left=None, right=None, gain=None, samples=None, value=None, rest_samples=None):
         
-        # for decision node
+        # Nodo
         self.feature_index = feature_index
-        self.threshold = threshold
+        self.decision_point = decision_point
         self.left = left
         self.right = right
-        self.info_gain = info_gain
+        self.gain = gain
         self.samples = samples
         self.rest_samples = rest_samples
         
-        # for leaf node
+        # Hoja
         self.value = value
         
 class DecisionTreeClassifier():
     def __init__(self, min_samples_split=2, max_depth=2):
-        ''' constructor '''
         
-        # initialize the root of the tree 
         self.root = None
         
-        # stopping conditions
         self.min_samples_split = min_samples_split
         self.max_depth = max_depth
         
     def build_tree(self, dataset, curr_depth=1):
-        ''' recursive function to build the tree ''' 
+        #Se construye el arbol recursivamente viendo quien es el mejor feature y se guarda en un nodo, 
+        #cuando se sale la recursividad, solo guarda el valor de la hoja (Y)
         
         X, Y = dataset[:,:-1], dataset[:,-1]
-        num_samples, num_features = np.shape(X)
+        num_samples, num_features = np.shape(X) # num_samples(row) y num_features(columns)
         
         #print(np.shape(X))
-        
-        # split until stopping conditions are met
+        print(curr_depth)
+
+        #Nodos
         if num_samples>=self.min_samples_split and curr_depth<=self.max_depth: 
-            # find the best split
-            best_split = self.get_best_split(dataset, num_samples, num_features)
-            # check if information gain is positive
-            if best_split["info_gain"]>0:
-                # recur left
+            best_split = self.get_best_decision_point(dataset, num_samples, num_features)
+            if best_split["gain"]>0:
+                # nodo izq
                 left_subtree = self.build_tree(best_split["dataset_left"], curr_depth+1)
-                # recur right
+                # nodo der
                 right_subtree = self.build_tree(best_split["dataset_right"], curr_depth+1)
-                # return decision node
-                return Node(best_split["feature_index"], best_split["threshold"], 
-                            left_subtree, right_subtree, best_split["info_gain"], num_samples)
+                return Node(best_split["feature_index"], best_split["decision_point"], 
+                            left_subtree, right_subtree, best_split["gain"], num_samples)
         
-        # compute leaf node
+        #Hojas
         leaf_value = self.calculate_leaf_value(Y)
-        # return leaf node
         return Node(value=leaf_value, rest_samples=num_samples)
     
-    def get_best_split(self, dataset, num_samples, num_features):
-        ''' function to find the best split '''
+    def get_best_decision_point(self, dataset, num_samples, num_features):
+        # Buscar el mejor feature para el árbol 
         
-        # dictionary to store the best split
-        best_split = {}
-        max_info_gain = -float("inf")
+        best_split = {} # diccionario 
+        max_gain = -float("inf") #obtener el mejor
         
-        # loop over all the features
+        # Ciclo de cada variable (feature column name)
         for feature_index in range(num_features):
             
             feature_values = dataset[:, feature_index]
-            #print(feature_values)
+            possible_decision_points = np.unique(feature_values)
             
-            possible_thresholds = np.unique(feature_values)
-            #print(possible_thresholds)
-            
-            # loop over all the feature values present in the data
-            for threshold in possible_thresholds:
-                # get current split
-                dataset_left, dataset_right = self.split(dataset, feature_index, threshold)
-                # check if childs are not null
+            # Ciclo de cada feature unico (filas)
+            for decision_point in possible_decision_points:
+                dataset_left, dataset_right = self.split(dataset, feature_index, decision_point)
+                
                 if len(dataset_left)>0 and len(dataset_right)>0:
                     y, left_y, right_y = dataset[:, -1], dataset_left[:, -1], dataset_right[:, -1]
-                    # compute information gain
-                    curr_info_gain = self.information_gain(y, left_y, right_y)
-                    # update the best split if needed
-                    if curr_info_gain>max_info_gain:
+                    # Calculo la ganancia
+                    curr_gain = self.calculate_gain(y, left_y, right_y)
+                    
+                    if curr_gain > max_gain: # Si es mejor al max_gain se actualiza por el actual
                         best_split["feature_index"] = feature_index
-                        best_split["threshold"] = threshold
+                        best_split["decision_point"] = decision_point
                         best_split["dataset_left"] = dataset_left
                         best_split["dataset_right"] = dataset_right
-                        best_split["info_gain"] = curr_info_gain
-                        max_info_gain = curr_info_gain
+                        best_split["gain"] = curr_gain
+                        max_gain = curr_gain
 
                         
         return best_split
     
-    def split(self, dataset, feature_index, threshold):
-        ''' function to split the data '''
+    def split(self, dataset, feature_index, decision_point):
+        #Divido el dataset en izq y der
         dataset_left = []
         dataset_right = []
         
-        '''dataset_left = np.array([row for row in dataset if row[feature_index]<=threshold])
-        dataset_right = np.array([row for row in dataset if row[feature_index]>threshold])'''
-        #print(feature_index,threshold)
-        
-        if (isinstance(threshold, int) or isinstance(threshold, float)):
-            dataset_left = np.array([row for row in dataset if row[feature_index]<=threshold])
-            dataset_right = np.array([row for row in dataset if row[feature_index]>threshold])
-            #print("NUMEROO..", feature_index,threshold)
-        else:
-            dataset_left = np.array([row for row in dataset if row[feature_index]==threshold])
-            dataset_right = np.array([row for row in dataset if row[feature_index]!=threshold])
-            #print("CARACTER..", feature_index,threshold)
+        if (isinstance(decision_point, int) or isinstance(decision_point, float)): #Si es numerico el feature
+            dataset_left = np.array([row for row in dataset if row[feature_index]<=decision_point])
+            dataset_right = np.array([row for row in dataset if row[feature_index]>decision_point])
+            #print("NUMERICO: ", feature_index,threshold)
+
+        else: #Si es categorico el feature
+            dataset_left = np.array([row for row in dataset if row[feature_index]==decision_point])
+            dataset_right = np.array([row for row in dataset if row[feature_index]!=decision_point])
+            #print("CATEGORICO: ", feature_index,threshold)
             
-        #print("DATAset L Y R..", dataset_left,dataset_right)
+        #print("Dateset L y R : ", dataset_left,dataset_right)
         return dataset_left, dataset_right
     
-    def information_gain(self, parent, l_child, r_child):
-        ''' function to compute information gain '''
+    def calculate_gain(self, parent, l_child, r_child):
+       #Calcular ganancia con gini
         
         weight_l = len(l_child) / len(parent)
         weight_r = len(r_child) / len(parent)
 
-        #print("l_child", l_child, "r_child", r_child)
         #Obtener con G(parent) - sum(wi * G(child(i)) ) el que sea mayor va a ser el mejor
-        gain = self.gini_index(parent) - (weight_l*self.gini_index(l_child) + weight_r*self.gini_index(r_child))
+        gain = self.gini(parent) - (weight_l*self.gini(l_child) + weight_r*self.gini(r_child))
         #print("GAIN", gain)
         return gain
     
-    def gini_index(self, y):
-        ''' function to compute gini index '''
+    def gini(self, y):
+        #Calcular Gini
         
         class_labels = np.unique(y)
         #print("class_labels", class_labels, "Y", y)
@@ -139,14 +126,12 @@ class DecisionTreeClassifier():
         return 1 - gini
         
     def calculate_leaf_value(self, Y):
-        ''' function to compute leaf node '''
-        
+        #Obtener valor de la hoja
         Y = list(Y)
-        return max(Y, key=Y.count)
+        return max(Y, key=Y.count) #Calcula el max de veces de un elemento que aparece en Y
     
     def print_tree(self, tree=None, indent=" ",data= None):
-        ''' function to print the tree '''
-        
+        #Imprimir el arbol en consola
         if not tree:
             tree = self.root
 
@@ -154,15 +139,15 @@ class DecisionTreeClassifier():
             print(tree.value, tree.rest_samples)
 
         else:
-            if (isinstance(tree.threshold, int) or isinstance(tree.threshold, float)):#Numerico
-                print(data.columns[tree.feature_index], "<=", tree.threshold, "?", "{Gain:",tree.info_gain, " Samples:", tree.samples,"}")
+            if (isinstance(tree.decision_point, int) or isinstance(tree.decision_point, float)):#Numerico
+                print(data.columns[tree.feature_index], "<=", tree.decision_point, "?", "{Gain:",tree.gain, " Samples:", tree.samples,"}")
                 print("%sleft:" % (indent), end="")
                 self.print_tree(tree.left, indent + indent, data)
                 print("%sright:" % (indent), end="")
                 self.print_tree(tree.right, indent + indent, data)
 
-            else: #categorico
-                print(data.columns[tree.feature_index], "==", tree.threshold, "?", "{Gain:",tree.info_gain, " Samples:", tree.samples,"}")
+            else: #Categorico
+                print(data.columns[tree.feature_index], "==", tree.decision_point, "?", "{Gain:",tree.gain, " Samples:", tree.samples,"}")
                 print("%sleft:" % (indent), end="")
                 self.print_tree(tree.left, indent + indent, data)
                 print("%sright:" % (indent), end="")
@@ -170,6 +155,7 @@ class DecisionTreeClassifier():
 
     
     def BFS_list(self,data= None):
+        #Obtener una lista por breath first search del arbol construido 
         nodes=[]
         tree = self.root
         if tree is None:
@@ -180,8 +166,11 @@ class DecisionTreeClassifier():
         while not cola.empty():
             tmp = cola.get()
             
-            if(tmp.threshold is not None):
-                question = " "+data.columns[tmp.feature_index] + " <= " + str(tmp.threshold) + " ?"
+            if(tmp.decision_point is not None):
+                if (isinstance(tmp.decision_point, int) or isinstance(tmp.decision_point, float)):
+                    question = " "+data.columns[tmp.feature_index] + " <= " + str(tmp.decision_point) + " ?"
+                else:
+                    question = " "+data.columns[tmp.feature_index] + " == " + tmp.decision_point + " ?"
                 nodes.append(question)
             else:
                 nodes.append(tmp.value)
@@ -193,130 +182,53 @@ class DecisionTreeClassifier():
                 
         return nodes
 
+    def image_tree_model(self, Y, data):
+        #Crear imagen del Arbol con dsplot
+        plotNodes = self.BFS_list(data)
+        places = [i for i, n in enumerate(plotNodes) if n in np.unique(Y)]
+
+        for i, v in enumerate(places):
+            index_left_child = 2 * v + 1
+            index_right_child = 2 * v + 2
+            
+            if index_left_child < len(plotNodes) and plotNodes[index_left_child] is not None:
+                plotNodes.insert(index_left_child, None)
+            else:
+                #print("STOP: No hay hijo izquierdo en el nodo", v)
+                break
+            
+            if index_right_child < len(plotNodes) and plotNodes[index_right_child] is not None:
+                plotNodes.insert(index_right_child, None)
+            else:
+                #print("STOP: No hay hijo derecho en el nodo", v)
+                break
+
+        tree = BinaryTree(plotNodes)
+        tree.plot("./image_model/TreeDecision.png", fill_color='#aec6cf')  
 
     def fit(self, X, Y):
-        ''' function to train the tree '''
-        
+        #Entrenar el modelo, o sea construir el arbol
         dataset = np.concatenate((X, Y), axis=1)
         self.root = self.build_tree(dataset)
     
     def predict(self, X):
-        ''' function to predict new dataset '''
-        
+        #Predecir con el modelo
         preditions = [self.make_prediction(x, self.root) for x in X]
         return preditions
     
-    def make_prediction(self, x, tree): #ve num y cat
-        ''' function to predict a single data point '''
+    def make_prediction(self, x, tree):
+        #predice un dato en el arbol
         
         if tree.value!=None: return tree.value
         feature_val = x[tree.feature_index]
         if (isinstance(feature_val, int) or isinstance(feature_val, float)):#Numerico
-            if feature_val<=tree.threshold:
+            if feature_val<=tree.feature:
                 return self.make_prediction(x, tree.left)
             else:
                 return self.make_prediction(x, tree.right)
         else: #Categorico
-            if feature_val==tree.threshold:
+            if feature_val==tree.feature:
                 return self.make_prediction(x, tree.left)
             else:
                 return self.make_prediction(x, tree.right)
 
-class Metrics():
-    def __init__(self):
-        pass
-    
-    def accuracy_score(y_true, y_pred):
-        ''' Function to calculate accuracy score '''
-        
-        correct = 0
-        for true, pred in zip(y_true, y_pred):
-            if true == pred:
-                correct += 1
-        accuracy = correct / len(y_true)
-        return accuracy
-
-    def recall_score(y_true, y_pred, positive_class):
-        ''' Function to calculate recall score '''
-        
-        true_positives = 0
-        actual_positives = 0
-        
-        for true, pred in zip(y_true, y_pred):
-            if true == positive_class:
-                actual_positives += 1
-                if pred == positive_class:
-                    true_positives += 1
-                    
-        if actual_positives == 0:
-            return 0  # Si no hay muestras positivas en los datos reales, el recall es 0
-        
-        recall = true_positives / actual_positives
-        return recall
-
-    def precision_score(y_true, y_pred, positive_class):
-    
-        true_positives = 0
-        false_positives = 0
-
-        for true, pred in zip(y_true, y_pred):
-            if pred == positive_class:
-                if true == positive_class:
-                    true_positives += 1
-                else:
-                    false_positives += 1  
-
-        if (true_positives + false_positives) == 0:
-            return 0
-        else:
-            return true_positives / (true_positives + false_positives)
-    
-    def f1_score(precision, recall):
-        if precision + recall == 0:
-            return 0
-        return 2 * (precision * recall) / (precision + recall)
-
-    def confusion_matrix(y_true, y_pred):
-        ''' Function to calculate confusion matrix '''
-    
-        # Convertir a arrays NumPy unidimensionales
-        y_true2 = np.array(y_true).flatten()
-        
-        # Encontrar las clases únicas presentes en las etiquetas verdaderas y las predicciones
-        classes = np.unique(np.concatenate((y_true2, y_pred)))
-
-        # Inicializar la matriz de confusión como una matriz numpy
-        matrix = np.zeros((len(classes), len(classes)), dtype=int)
-        
-        # Llenar la matriz de confusión
-        for true, pred in zip(y_true, y_pred):
-            true_idx = np.where(classes == true)[0][0]
-            pred_idx = np.where(classes == pred)[0][0]
-            matrix[true_idx, pred_idx] += 1
-        
-        # Crear un DataFrame de Pandas para la matriz de confusión
-        conf_df = pd.DataFrame(matrix, index=classes, columns=classes)
-        
-        label_1 = classes[1] if 1 in classes else classes[0]
-        label_2 = classes[0] if label_1 == classes[1] else classes[1]
-        
-        # Agregar etiquetas a la matriz
-        conf_df.rename({label_1: label_1, label_2: label_2}, axis=0, inplace=True)
-        conf_df.rename({label_1: label_1, label_2: label_2}, axis=1, inplace=True)
-        
-        return conf_df
-    
-    def img_confusion_matrix(self, y_true, y_pred):
-        matrix = self.confusion_matrix(y_true, y_pred)
-        plt.figure(figsize=(8, 6))
-        plt.imshow(confusion_matrix, interpolation='nearest', cmap=plt.cm.Blues)
-        plt.title('Confusion Matrix')
-        plt.colorbar()
-        tick_marks = range(len(confusion_matrix))
-        plt.xticks(tick_marks, confusion_matrix.columns, rotation=45)
-        plt.yticks(tick_marks, confusion_matrix.index)
-        plt.tight_layout()
-        plt.ylabel('True label')
-        plt.xlabel('Predicted label')
-        plt.savefig("./image_model/Confusion_Matrix.png")  #TODO: PONER DONDE SE GUARDA
-        plt.show()
