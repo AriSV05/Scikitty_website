@@ -8,13 +8,15 @@ import random
 from classes import DecisionTreeClassifier as tree
 
 def read_csv_with_column_names(filename):
-    with open('./demos/'+ filename, 'r') as file:
-        # Leer la primera línea para obtener los nombres de las columnas
-        col_names = file.readline().strip().split(',')
-        yield col_names
-        # Leer el resto del archivo línea por línea
-        for line in file:
-            yield line.strip().split(',')
+    name_csv = "./demos/"+filename
+    # Leer solo la primera fila para obtener los nombres de las columnas
+    with open(name_csv, 'r') as file:
+        col_names = next(file).strip().split(',')
+    
+    # Leer el resto del archivo omitiendo la primera fila
+    data = pd.read_csv(name_csv, skiprows=1, header=None, names = col_names)
+    
+    return data
 
 def import_model(filename): 
     #Cargar modelo

@@ -1,5 +1,6 @@
 import numpy as np
 from dsplot.tree import BinaryTree
+import pandas as pd
 import queue
 
 
