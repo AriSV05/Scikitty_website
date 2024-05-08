@@ -35,9 +35,7 @@ def create_tree():
 
     archivo_csv.save(f'./demos/{nombre_archivo}')
 
-    csv_generator = sk.read_csv_with_column_names(nombre_archivo)
-    col_names = next(csv_generator)  # Obtener los nombres de las columnas
-    data = pd.DataFrame(csv_generator, columns=col_names)
+    data = sk.read_csv_with_column_names(nombre_archivo)
     X = data.iloc[:, :-1].values
     Y = data.iloc[:, -1].values.reshape(-1,1)
 
@@ -73,9 +71,7 @@ def load_tree():
     model_name = request.form['form_model_name']
     csv_name = model_name.split(".")[0]+".csv"
 
-    csv_generator = sk.read_csv_with_column_names(csv_name)
-    col_names = next(csv_generator)  # Obtener los nombres de las columnas
-    data = pd.DataFrame(csv_generator, columns=col_names)
+    data = sk.read_csv_with_column_names(csv_name)
     X = data.iloc[:, :-1].values
     Y = data.iloc[:, -1].values.reshape(-1,1)
 
