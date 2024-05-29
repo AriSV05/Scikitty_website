@@ -1,2 +1,1 @@
-cd SERVER_python
-python scikitty_server.py
+python -m SERVER_python.scikitty_server

@@ -2,22 +2,7 @@ import numpy as np
 from dsplot.tree import BinaryTree
 import pandas as pd
 import queue
-
-
-class Node():
-    def __init__(self, feature_index=None, decision_point=None, left=None, right=None, gain=None, samples=None, value=None, rest_samples=None):
-        
-        # Nodo
-        self.feature_index = feature_index
-        self.decision_point = decision_point
-        self.left = left
-        self.right = right
-        self.gain = gain
-        self.samples = samples
-        self.rest_samples = rest_samples
-        
-        # Hoja
-        self.value = value
+from .Node import Node as Node
         
 class DecisionTreeClassifier():
     def __init__(self, min_samples_split=2, max_depth=2):
@@ -182,7 +167,7 @@ class DecisionTreeClassifier():
                 
         return nodes
 
-    def image_tree_model(self, Y, data):
+    def image_tree_model(self, Y, data, route):
         #Crear imagen del Arbol con dsplot
         plotNodes = self.BFS_list(data)
         places = [i for i, n in enumerate(plotNodes) if n in np.unique(Y)]
@@ -204,7 +189,7 @@ class DecisionTreeClassifier():
                 break
 
         tree = BinaryTree(plotNodes)
-        tree.plot("./image_model/TreeDecision.png", fill_color='#aec6cf')  
+        tree.plot(f'{route}.png', fill_color='#aec6cf')  
 
     def fit(self, X, Y):
         #Entrenar el modelo, o sea construir el arbol

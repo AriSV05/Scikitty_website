@@ -2,8 +2,9 @@ import os
 import pandas as pd
 from flask import Flask, jsonify, request, send_file
 import numpy as np
-import scikitty_funtions as sk
-from classes import DecisionTreeClassifier
+from scikitty import scikitty_funtions as sk
+from scikitty.models.DecisionTree import DecisionTreeClassifier
+from scikitty.metrics.metrics import accuracy_score, recall_score, precision_score, f1_score, img_confusion_matrix
 
 app = Flask(__name__)
 
@@ -12,13 +13,17 @@ x_test_saved = None
 classifier_saved = None
 uniques_targets_saved = None
 
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
 @app.route('/')
 def inicio():
     return "Scikitty server funcionando!"
 
 @app.route('/cargar_previos', methods=['GET'])
 def cargar_previos():
-    ruta_carpeta = './models'#TODO 
+    global project_root
+
+    ruta_carpeta = os.path.join(project_root, 'SERVER_python/created_models')
     
     nombres_archivos = os.listdir(ruta_carpeta)
 
@@ -26,16 +31,20 @@ def cargar_previos():
 
 @app.route('/create_tree', methods=['POST'])
 def create_tree():
-    global y_test_saved, classifier_saved, x_test_saved, uniques_targets_saved
+    global y_test_saved, classifier_saved, x_test_saved, uniques_targets_saved, project_root
 
     archivo_csv = request.files['archivo']
-    nombre_archivo = archivo_csv.filename
+    nombre_archivo = archivo_csv.filename.split(".")[0]
+
+    csv = os.path.join(project_root, 'csv', nombre_archivo)
+    model = os.path.join(project_root, 'SERVER_python/created_models')
+    img = os.path.join(project_root, 'SERVER_python/image_model/TreeDecision')
 
     altura = int(request.form['altura'])
 
-    archivo_csv.save(f'./demos/{nombre_archivo}')
+    archivo_csv.save(f'{csv}.csv')
 
-    data = sk.read_csv_with_column_names(nombre_archivo)
+    data = sk.read_csv_with_column_names(csv)
     X = data.iloc[:, :-1].values
     Y = data.iloc[:, -1].values.reshape(-1,1)
 
@@ -50,12 +59,10 @@ def create_tree():
     x_test_saved =  X_test
 
 
-    classifier.print_tree(data=data) #impon en consola
-    classifier.image_tree_model(Y, data) #png
+    classifier.print_tree(data=data) #consola
+    classifier.image_tree_model(Y, data, img) #png
 
-    model_name = nombre_archivo.split(".")[0]
-
-    sk.save_model(classifier_saved, model_name)
+    sk.save_model(classifier_saved, nombre_archivo, model)
 
     targets = np.array(Y).flatten()
     uniques_targets = np.unique(targets)
@@ -66,24 +73,27 @@ def create_tree():
 
 @app.route('/load_tree', methods=['POST'])
 def load_tree():
-    global y_test_saved, classifier_saved, x_test_saved, uniques_targets_saved
+    global y_test_saved, classifier_saved, x_test_saved, uniques_targets_saved, project_root
 
     model_name = request.form['form_model_name']
-    csv_name = model_name.split(".")[0]+".csv"
+    csv_name = model_name.split(".")[0]
 
-    data = sk.read_csv_with_column_names(csv_name)
+    csv = os.path.join(project_root, 'csv', csv_name)
+    model = os.path.join(project_root, 'SERVER_python/created_models', model_name)
+
+    data = sk.read_csv_with_column_names(csv)
     X = data.iloc[:, :-1].values
     Y = data.iloc[:, -1].values.reshape(-1,1)
 
     _, X_test, _, Y_test = sk.train_test_split(X, Y)
     
-    classifier_saved = sk.import_model(model_name)
+    classifier_saved = sk.import_model(model)
 
     y_test_saved = Y_test
     x_test_saved =  X_test
 
-    classifier_saved.print_tree(data=data) #impresion en consola
-    classifier_saved.image_tree_model(Y, data) #png
+    classifier_saved.print_tree(data=data) #consola
+    #classifier_saved.image_tree_model(Y, data) #png
     
     targets = np.array(Y).flatten()
     uniques_targets = np.unique(targets)
@@ -111,12 +121,12 @@ def metrics():
  
     positive = request.form['positive']
 
-    accuracy = sk.accuracy_score(y_test_saved, y_pred)
-    precision = sk.precision_score(y_test_saved, y_pred, positive)
-    recall = sk.recall_score(y_test_saved, y_pred, positive)
-    f1 = sk.f1_score(precision, recall)
+    accuracy = accuracy_score(y_test_saved, y_pred)
+    precision = precision_score(y_test_saved, y_pred, positive)
+    recall = recall_score(y_test_saved, y_pred, positive)
+    f1 = f1_score(precision, recall)
 
-    sk.img_confusion_matrix(y_test_saved, y_pred)
+    img_confusion_matrix(y_test_saved, y_pred)
 
     results = {
         "Accuracy":accuracy,
