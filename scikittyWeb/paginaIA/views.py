@@ -1,6 +1,6 @@
 import requests
 from django.urls import reverse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.template import Template, Context
 from django.middleware.csrf import get_token
 
@@ -24,14 +24,53 @@ def model_details(request, model_name):
     model_name = request.GET.get('modelo')
     return render(request, 'model_details.html',{'model_name': model_name})
 
+def select_y_column(request):
+    return render(request, 'select_y_column.html')
+
+def seleccionar_Y(request):
+    if request.method == 'POST':
+        tree_action = request.POST.get('tree_action')
+        url = 'http://127.0.0.1:8001/y_column'
+        altura = ''
+
+        if tree_action == 'load_tree':
+            form_model_name = request.POST.get('modelo')
+            data = {'name': form_model_name}
+
+            respuesta = requests.post(url, data = data)
+            model_name = form_model_name
+
+        elif tree_action == 'create_tree':
+            archivo_csv = request.FILES['archivo_csv']
+            nombre_archivo = archivo_csv.name
+
+            altura = request.POST.get('altura')
+            archivos = {'archivo': archivo_csv}
+            archivos['name'] = nombre_archivo
+
+            data = {'altura':altura}
+
+            respuesta = requests.post(url, files=archivos, data=data)
+            model_name = nombre_archivo
+
+        if respuesta.status_code == 200:
+            return render(request,'select_y_column.html',
+            {'name':model_name, 'altura':altura, 'tree_action':tree_action, 'column_list':respuesta.json()})
+        
+        else:
+            mensaje = "Hubo un error al enviar el archivo al servidor remoto."
+
+        return render(request, 'error.html', {'mensaje': mensaje})
+
 def load_tree(request):
 
     if request.method == 'POST':
 
             form_model_name = request.POST.get('modelo')
+            y_column = request.POST.get('y_column')
 
             url = 'http://127.0.0.1:8001/load_tree'
-            data = {'form_model_name': form_model_name}
+            data = {'name': form_model_name, 'y_column': y_column}
 
             respuesta = requests.post(url, data = data)
 
@@ -102,7 +141,6 @@ def get_image_matrix(request):
 
         respuesta = requests.post(url, data=data)
         metricas = respuesta.json()
-        print(metricas)
 
         details = f""" 
                     <br><br><br>
