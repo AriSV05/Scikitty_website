@@ -2,7 +2,7 @@ from .utils import building_tree, metrics, console_input
 
 if __name__ == '__main__':
 
-    uniques_targets, X_test, Y_test, classifier = building_tree('fictional_disease')
+    uniques_targets, X_test, Y_test, classifier = building_tree('fictional_disease', 'Disease')
     
     selected = console_input(uniques_targets)
 
