@@ -6,7 +6,7 @@ import os
 
 
 
-def building_tree(filename):
+def building_tree(filename, target):
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
     ruta = os.path.join(project_root, 'csv', filename)
@@ -14,8 +14,11 @@ def building_tree(filename):
 
     data = sk.read_csv_with_column_names(ruta)
 
-    X = data.iloc[:, :-1].values
-    Y = data.iloc[:, -1].values.reshape(-1,1)
+    #X = data.iloc[:, :-1].values
+    #Y = data.iloc[:, -1].values.reshape(-1,1)
+
+    X = data.drop(columns=[target]).values
+    Y = data[target].values.reshape(-1,1)
 
     X_train, X_test, Y_train, Y_test = sk.train_test_split(X, Y)
 
