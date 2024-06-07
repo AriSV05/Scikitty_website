@@ -24,7 +24,7 @@ class DecisionTreeClassifier():
         #Nodos
         if num_samples>=self.min_samples_split and curr_depth<=self.max_depth: 
             best_split = self.get_best_decision_point(dataset, num_samples, num_features)
-            if best_split["gain"]>0:
+            if best_split.get("gain",0)>0:
                 # nodo izq
                 left_subtree = self.build_tree(best_split["dataset_left"], curr_depth+1)
                 # nodo der
