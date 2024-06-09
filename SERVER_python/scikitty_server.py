@@ -63,8 +63,8 @@ def create_tree():
 
     data = data_saved
 
-    Y = data_saved[y_column]
-    X = data_saved.drop(columns=[y_column])
+    X = data.drop(columns=[y_column]).values
+    Y = data[y_column].values.reshape(-1,1)
 
     X_train, X_test, Y_train, Y_test = sk.train_test_split(X, Y)
 
@@ -92,16 +92,18 @@ def create_tree():
 def load_tree():
     global y_test_saved, classifier_saved, x_test_saved, uniques_targets_saved, project_root, data_saved
 
-    name = request.form['name'].split(".")[0]
+    name = request.form['name'].split(".")[0] + ".pkl"
     y_column = request.form['y_column']
 
     model = os.path.join(project_root, 'SERVER_python/created_models', name)
+    img = os.path.join(project_root, 'SERVER_python/image_model/TreeDecision')
 
     data = data_saved
-    Y = data_saved[y_column]
-    X = data_saved.drop(columns=[y_column])
 
-    print(X, Y)
+    X = data.drop(columns=[y_column]).values
+    Y = data[y_column].values.reshape(-1,1)
+
+    print(X,Y)
 
     _, X_test, _, Y_test = sk.train_test_split(X, Y)
     
@@ -111,7 +113,7 @@ def load_tree():
     x_test_saved =  X_test
 
     classifier_saved.print_tree(data=data) #consola
-    classifier_saved.image_tree_model(Y, data) #png
+    classifier_saved.image_tree_model(Y, data, img) #png
     
     targets = np.array(Y).flatten()
     uniques_targets = np.unique(targets)
@@ -144,7 +146,9 @@ def metrics():
     recall = recall_score(y_test_saved, y_pred, positive)
     f1 = f1_score(precision, recall)
 
-    img_confusion_matrix(y_test_saved, y_pred)
+    route = os.path.join(project_root, 'SERVER_python/image_model/Confusion_Matrix.png')
+
+    img_confusion_matrix(y_test_saved, y_pred, route)
 
     results = {
         "Accuracy":accuracy,
@@ -157,9 +161,9 @@ def metrics():
 
 @app.route('/metrics_image', methods=['GET'])
 def metrics_image():
-    matrix_route = "./image_model/Confusion_Matrix.png"
+    img = os.path.join(project_root, 'SERVER_python/image_model/Confusion_Matrix.png')
 
-    return send_file(matrix_route, mimetype='image/png')
+    return send_file(img, mimetype='image/png')
 
 
 @app.route('/image_tree', methods=['POST'])

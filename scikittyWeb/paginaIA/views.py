@@ -62,48 +62,28 @@ def seleccionar_Y(request):
 
         return render(request, 'error.html', {'mensaje': mensaje})
 
-def load_tree(request):
-
+def tree(request):
     if request.method == 'POST':
+        form_model_name = request.POST.get('modelo')
+        y_column = request.POST.get('y_column')
+        altura = request.POST.get('altura')
+        tree_action = request.POST.get('tree_action')
 
-            form_model_name = request.POST.get('modelo')
-            y_column = request.POST.get('y_column')
-
+        if tree_action == 'load_tree':
             url = 'http://127.0.0.1:8001/load_tree'
             data = {'name': form_model_name, 'y_column': y_column}
 
-            respuesta = requests.post(url, data = data)
+        else:
+            url = 'http://127.0.0.1:8001/create_tree'
+            data = {'name': form_model_name, 'y_column': y_column, 'altura':altura}
 
-            if respuesta.status_code == 200:
-                return render(request, 'model_details.html',{'model_name':form_model_name})
-            else:
-                mensaje = "Hubo un error al enviar los datos al servidor remoto."
-
-    return render(request, 'error.html',{'mensaje': mensaje})
-
-def create_tree(request):
-    if request.method == 'POST':
-
-        archivo_csv = request.FILES['archivo_csv']
-        nombre_archivo = archivo_csv.name
-
-        altura = request.POST.get('altura')
-
-        url = 'http://127.0.0.1:8001/create_tree'
-
-        archivos = {'archivo': archivo_csv}
-        archivos['nombre_archivo'] = nombre_archivo
-
-        data = {'altura':altura}
-
-        respuesta = requests.post(url, files=archivos, data=data)
+        respuesta = requests.post(url, data = data)
 
         if respuesta.status_code == 200:
-            return render(request, 'model_details.html',{'model_name':nombre_archivo})
+                return render(request, 'model_details.html',{'model_name':form_model_name})
         else:
-            mensaje = "Hubo un error al enviar el archivo al servidor remoto."
-
-        return render(request, 'error.html', {'mensaje': mensaje})
+            mensaje = "Hubo un error al enviar los datos al servidor remoto."
+    return render(request, 'error.html',{'mensaje': mensaje})
 
 def get_image_tree(request):
     if request.method == 'POST':

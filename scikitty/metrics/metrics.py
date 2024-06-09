@@ -75,7 +75,7 @@ def confusion_matrix(y_test, y_pred):
         
     return conf_df
     
-def img_confusion_matrix(y_test, y_pred):
+def img_confusion_matrix(y_test, y_pred, route):
     matrix = confusion_matrix(y_test, y_pred)
     plt.figure(figsize=(8, 6))
     plt.imshow(matrix, interpolation='nearest', cmap=plt.cm.Blues)
@@ -87,4 +87,4 @@ def img_confusion_matrix(y_test, y_pred):
     plt.tight_layout()
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
-    plt.savefig("./image_model/Confusion_Matrix.png")  
+    plt.savefig(route)  
