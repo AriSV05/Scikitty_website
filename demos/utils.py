@@ -67,7 +67,7 @@ def metrics(y_test, x_test, classifier, targets, positive_pos):
 
 def console_input(targets):
     while True:
-        entrada = input(f'Ingese 0 para seleccionar como target {targets[0]} o 1 para seleccionar {targets[1]}: ')
+        entrada = input(f'Ingese 0 para seleccionar como target *{targets[0]}* o 1 para seleccionar *{targets[1]}*: ')
         if entrada == "1" or entrada == "0":
             break
         else:
