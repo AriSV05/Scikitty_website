@@ -200,10 +200,10 @@ class DecisionTreeClassifier():
         #Predecir con el modelo
         preditions = [self.make_prediction(x, self.root) for x in X]
         return preditions
-    
+
     def make_prediction(self, x, tree):
         #predice un dato en el arbol
-        
+
         if tree.value!=None: return tree.value
         feature_val = x[tree.feature_index]
         if (isinstance(feature_val, int) or isinstance(feature_val, float)):#Numerico

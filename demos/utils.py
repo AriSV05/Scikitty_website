@@ -3,7 +3,7 @@ from ..scikitty.models.DecisionTree import DecisionTreeClassifier
 from ..scikitty.metrics.metrics import accuracy_score, recall_score, precision_score, f1_score
 import numpy as np
 import os
-
+from sklearn.metrics import mean_squared_error
 
 
 def building_tree(filename, target):
@@ -13,12 +13,6 @@ def building_tree(filename, target):
     models = os.path.join(project_root, 'created_models', f'{filename}.pkl')
 
     data = sk.read_csv_with_column_names(ruta)
-
-    target_column = data.pop(target)
-    data[target] = target_column;
-    
-    #X = data.iloc[:, :-1].values
-    #Y = data.iloc[:, -1].values.reshape(-1,1)
 
     X = data.drop(columns=[target]).values
     Y = data[target].values.reshape(-1,1)
@@ -73,3 +67,19 @@ def console_input(targets):
         else:
             print("¡Error! Debes ingresar solo 1 o 0.")
     return int(entrada)
+
+def tree_boosting(filename, target):
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
+    ruta = os.path.join(project_root, 'csv', filename)
+    data = sk.read_csv_with_column_names(ruta)
+
+    X = data.drop(columns=[target]).values
+    Y = data[target].values.reshape(-1,1)
+
+    _, X_test, _, Y_test = sk.train_test_split(X, Y)
+
+    h = sk.tree_gradient_boosting(X_test, Y_test, T=20, alpha=0.1, alpha_min=0.01, data_columns=data)
+   
+    mse = mean_squared_error(Y_test, h)
+    print(f"\nMSE: {mse}\n")
