@@ -1,0 +1,42 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SciKitty - Y column</title>
+    <link rel="stylesheet" href="{% static '/css/styles.css' %}">
+    <link rel="stylesheet" href="{% static '/css/binario.css' %}">
+</head>
+<body>
+    {% include 'header.html' %}
+    <main>
+        {% include 'menu.html' %}
+
+        <div id="content">
+            <h2 class="nombreArchivo">Columnas del modelo {{ name }} a seleccionar</h2>
+            <h4>Selecciona la columna target para el modelo</h4>
+
+            <form method="post" action="{% url 'tree' %}" class="select_y">
+            {% if tree_action == 'load_tree'%}
+                <input type="hidden" value="load_tree" name="tree_action">
+            {% endif %}
+            {% if tree_action == 'create_tree'%}
+                <input type="hidden" value="create_tree" name="tree_action">
+                <input type="hidden" value="{{altura}}" name="altura">
+            {% endif %}
+                {% csrf_token %}
+                <br>
+                {% for column in column_list %}
+                    <div class="sel_cont">
+                        <input type="radio" name="y_column" value="{{ column }}">
+                        <label>{{ column }}</label>
+                    </div>
+                    <input type="hidden" value="{{name}}" name="modelo">
+                {% endfor %}
+                <button id="ok-button">OK</button>
+            </form>
+        </div>
+    </main>
+</body>
+</html>

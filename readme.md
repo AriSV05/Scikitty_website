@@ -25,7 +25,16 @@ Seguidamente se deben instalar todas las dependencias que necesita la aplicació
 ```
  .\pip_install.bat
 ```
-## Ejecución
+
+## Ejecución de pruebas con demos
+
+Para ejecutar los demos, utilizaremos el ejecutable:
+
+```
+ .\run_scripts.bat
+```
+
+## Ejecución del sitio web
 
 Para ejecutar el sitio web utilizaremos el siguiente ejecutable:
 

@@ -2,15 +2,19 @@ import os
 import pandas as pd
 from flask import Flask, jsonify, request, send_file
 import numpy as np
-import scikitty_funtions as sk
-from classes import DecisionTreeClassifier
+from scikitty import scikitty_funtions as sk
+from scikitty.models.DecisionTree import DecisionTreeClassifier
+from scikitty.metrics.metrics import accuracy_score, recall_score, precision_score, f1_score, img_confusion_matrix
 
 app = Flask(__name__)
 
+data_saved = None
 y_test_saved = None
 x_test_saved = None
 classifier_saved = None
 uniques_targets_saved = None
+
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 @app.route('/')
 def inicio():
@@ -18,26 +22,49 @@ def inicio():
 
 @app.route('/cargar_previos', methods=['GET'])
 def cargar_previos():
-    ruta_carpeta = './models'#TODO 
+    global project_root
+
+    ruta_carpeta = os.path.join(project_root, 'SERVER_python/created_models')
     
     nombres_archivos = os.listdir(ruta_carpeta)
 
     return jsonify(nombres_archivos)
 
+@app.route('/y_column', methods=['POST'])
+def y_column():
+    global data_saved
+
+    if 'archivo' in request.files and request.files['archivo']:
+        archivo_csv = request.files['archivo']
+        nombre_archivo = archivo_csv.filename.split(".")[0]
+        csv = os.path.join(project_root, 'csv', nombre_archivo)
+        archivo_csv.save(f'{csv}.csv')
+    
+    else:
+        nombre_archivo = request.form['name'].split(".")[0]
+        csv = os.path.join(project_root, 'csv', nombre_archivo)
+
+    data_saved = sk.read_csv_with_column_names(csv)
+    column_names = data_saved.columns.to_list()
+
+    return jsonify(column_names)
+
 @app.route('/create_tree', methods=['POST'])
 def create_tree():
-    global y_test_saved, classifier_saved, x_test_saved, uniques_targets_saved
+    global y_test_saved, classifier_saved, x_test_saved, uniques_targets_saved, project_root, data_saved
 
-    archivo_csv = request.files['archivo']
-    nombre_archivo = archivo_csv.filename
+    model = os.path.join(project_root, 'SERVER_python/created_models')
+    img = os.path.join(project_root, 'SERVER_python/image_model/TreeDecision')
+
+    name = request.form['name'].split(".")[0]
+    y_column = request.form['y_column']
 
     altura = int(request.form['altura'])
 
-    archivo_csv.save(f'./demos/{nombre_archivo}')
+    data = data_saved
 
-    data = sk.read_csv_with_column_names(nombre_archivo)
-    X = data.iloc[:, :-1].values
-    Y = data.iloc[:, -1].values.reshape(-1,1)
+    X = data.drop(columns=[y_column]).values
+    Y = data[y_column].values.reshape(-1,1)
 
     X_train, X_test, Y_train, Y_test = sk.train_test_split(X, Y)
 
@@ -49,13 +76,10 @@ def create_tree():
     y_test_saved = Y_test
     x_test_saved =  X_test
 
+    classifier.print_tree(data=data) #consola
+    classifier.image_tree_model(Y, data, img) #png
 
-    classifier.print_tree(data=data) #impon en consola
-    classifier.image_tree_model(Y, data) #png
-
-    model_name = nombre_archivo.split(".")[0]
-
-    sk.save_model(classifier_saved, model_name)
+    sk.save_model(classifier_saved, name, model)
 
     targets = np.array(Y).flatten()
     uniques_targets = np.unique(targets)
@@ -66,24 +90,30 @@ def create_tree():
 
 @app.route('/load_tree', methods=['POST'])
 def load_tree():
-    global y_test_saved, classifier_saved, x_test_saved, uniques_targets_saved
+    global y_test_saved, classifier_saved, x_test_saved, uniques_targets_saved, project_root, data_saved
 
-    model_name = request.form['form_model_name']
-    csv_name = model_name.split(".")[0]+".csv"
+    name = request.form['name'].split(".")[0] + ".pkl"
+    y_column = request.form['y_column']
 
-    data = sk.read_csv_with_column_names(csv_name)
-    X = data.iloc[:, :-1].values
-    Y = data.iloc[:, -1].values.reshape(-1,1)
+    model = os.path.join(project_root, 'SERVER_python/created_models', name)
+    img = os.path.join(project_root, 'SERVER_python/image_model/TreeDecision')
+
+    data = data_saved
+
+    X = data.drop(columns=[y_column]).values
+    Y = data[y_column].values.reshape(-1,1)
+
+    print(X,Y)
 
     _, X_test, _, Y_test = sk.train_test_split(X, Y)
     
-    classifier_saved = sk.import_model(model_name)
+    classifier_saved = sk.import_model(model)
 
     y_test_saved = Y_test
     x_test_saved =  X_test
 
-    classifier_saved.print_tree(data=data) #impresion en consola
-    classifier_saved.image_tree_model(Y, data) #png
+    classifier_saved.print_tree(data=data) #consola
+    classifier_saved.image_tree_model(Y, data, img) #png
     
     targets = np.array(Y).flatten()
     uniques_targets = np.unique(targets)
@@ -111,12 +141,14 @@ def metrics():
  
     positive = request.form['positive']
 
-    accuracy = sk.accuracy_score(y_test_saved, y_pred)
-    precision = sk.precision_score(y_test_saved, y_pred, positive)
-    recall = sk.recall_score(y_test_saved, y_pred, positive)
-    f1 = sk.f1_score(precision, recall)
+    accuracy = accuracy_score(y_test_saved, y_pred)
+    precision = precision_score(y_test_saved, y_pred, positive)
+    recall = recall_score(y_test_saved, y_pred, positive)
+    f1 = f1_score(precision, recall)
 
-    sk.img_confusion_matrix(y_test_saved, y_pred)
+    route = os.path.join(project_root, 'SERVER_python/image_model/Confusion_Matrix.png')
+
+    img_confusion_matrix(y_test_saved, y_pred, route)
 
     results = {
         "Accuracy":accuracy,
@@ -129,9 +161,9 @@ def metrics():
 
 @app.route('/metrics_image', methods=['GET'])
 def metrics_image():
-    matrix_route = "./image_model/Confusion_Matrix.png"
+    img = os.path.join(project_root, 'SERVER_python/image_model/Confusion_Matrix.png')
 
-    return send_file(matrix_route, mimetype='image/png')
+    return send_file(img, mimetype='image/png')
 
 
 @app.route('/image_tree', methods=['POST'])

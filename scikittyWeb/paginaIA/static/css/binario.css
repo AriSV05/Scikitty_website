@@ -19,3 +19,23 @@
 .inp_cont input{
     justify-content: start;
 }
+
+.sel_cont{
+    display: flex;
+    align-items: center;
+}
+
+.sel_cont input{
+    justify-content: start;
+}
+
+.select_y{
+    display: flex;
+    align-items: center;
+    gap: 2vh;
+    justify-content: center;
+}
+
+.select_y button{
+    align-self: flex-start;
+}
