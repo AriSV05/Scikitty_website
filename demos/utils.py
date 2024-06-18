@@ -30,7 +30,7 @@ def building_tree(filename, target):
         classifier = sk.import_model(models)
 
     else:
-        altura = 4
+        altura = 6
 
         classifier = DecisionTreeClassifier(min_samples_split= 2, max_depth=altura)
         classifier.fit(X_train,Y_train)
