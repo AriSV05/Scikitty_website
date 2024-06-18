@@ -14,6 +14,9 @@ def building_tree(filename, target):
 
     data = sk.read_csv_with_column_names(ruta)
 
+    target_column = data.pop(target)
+    data[target] = target_column;
+    
     X = data.drop(columns=[target]).values
     Y = data[target].values.reshape(-1,1)
 
