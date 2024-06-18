@@ -63,6 +63,9 @@ def create_tree():
 
     data = data_saved
 
+    target_column = data.pop(y_column)
+    data[y_column] = target_column;
+
     X = data.drop(columns=[y_column]).values
     Y = data[y_column].values.reshape(-1,1)
 
@@ -99,6 +102,9 @@ def load_tree():
     img = os.path.join(project_root, 'SERVER_python/image_model/TreeDecision')
 
     data = data_saved
+
+    target_column = data.pop(y_column)
+    data[y_column] = target_column;
 
     X = data.drop(columns=[y_column]).values
     Y = data[y_column].values.reshape(-1,1)
