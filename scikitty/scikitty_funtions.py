@@ -1,7 +1,9 @@
 import joblib
 import pandas as pd
+import numpy as np
 import os
 import random
+from ..scikitty.models.DecisionTree import DecisionTreeClassifier
 
 def read_csv_with_column_names(filename):
     name_csv = f'{filename}.csv'
@@ -40,3 +42,27 @@ def train_test_split(X, Y, test_size=0.3, random_state=42):
     Y_train, Y_test = Y[train_indices], Y[test_indices]
 
     return X_train, X_test, Y_train, Y_test
+
+def residual(y, h):
+    return y - h
+
+def decay(alpha, alpha_decay=0.9):
+    return alpha * alpha_decay
+
+def tree_gradient_boosting(X, y, T=100, alpha=0.1, alpha_min=0.01, loss='mse', data_columns=None):
+    r = y
+    h = np.zeros_like(y, dtype=np.float64)
+
+    for i in range(T):
+        tree = DecisionTreeClassifier(min_samples_split=2, max_depth=1)
+        tree.fit(X, r.reshape(-1,1))
+        ht = np.array(tree.predict(X)).reshape(-1,1)
+        h += alpha * ht
+        r = residual(y, h)
+        alpha = decay(alpha)
+        print(f"\n\t***Iteration {i+1}***\n")
+        tree.print_tree(data=data_columns)
+        if alpha < alpha_min:
+            break
+    
+    return h
