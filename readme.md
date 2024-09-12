@@ -37,22 +37,6 @@ Seguidamente se deben instalar todas las dependencias que necesita la aplicació
  .\pip_install.bat
 ```
 
-## Ejecución de pruebas con demos Decision Tree Classifier
-
-Para ejecutar los demos de Decision Tree Classifier, utilizaremos el ejecutable:
-
-```
- .\run_scripts.bat
-```
-
-## Ejecución de pruebas con demos Tree Gradient Boosting
-
-Para ejecutar los demos de Tree Gradient Boosting, utilizaremos el ejecutable:
-
-```
- .\run_tb_scripts.bat
-```
-
 ## Ejecución del sitio web
 
 Para ejecutar el sitio web utilizaremos el siguiente ejecutable:
