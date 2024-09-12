@@ -4,6 +4,17 @@ Nicole Araya Ballestero | Esteban Mojica Gonzalez | Daniel Ramirez Calvo | Arian
 Scikitty IA - 2024
 UNA
 
+<details>
+ <summary>Imagenes del sitio web</summary>
+
+ ![sckitty1](scikitty_webpage_photos/scikitty1.png)
+ ![sckitty2](scikitty_webpage_photos/scikitty2.png)
+ ![sckitty3](scikitty_webpage_photos/scikitty3.png)
+ ![sckitty4](scikitty_webpage_photos/scikitty4.png)
+ ![sckitty5](scikitty_webpage_photos/scikitty5.png)
+ ![sckitty6](scikitty_webpage_photos/scikitty6.png)
+</details>
+
 # Descarga
 
 Se descarga la aplicación del drive del profesor en formato zip

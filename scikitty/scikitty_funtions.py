@@ -1,9 +1,7 @@
 import joblib
 import pandas as pd
-import numpy as np
 import os
 import random
-from ..scikitty.models.DecisionTree import DecisionTreeClassifier
 
 def read_csv_with_column_names(filename):
     name_csv = f'{filename}.csv'
