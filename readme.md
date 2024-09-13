@@ -1,8 +1,6 @@
-## Integrantes:
-Nicole Araya Ballestero | Esteban Mojica Gonzalez | Daniel Ramirez Calvo | Ariana Solano Vallejos 
-##
-Scikitty IA - 2024
-UNA
+## Scikitty IA - UNA- 2024
+
+This project is a clone of Scikit-Learn called Scikitty. Like Scikit-Learn, Scikitty generates decision trees from CSV files. You can select the height of the tree, the prediction variable, and its state. It also displays the tree and the confusion matrix as images. The entire project was developed in Python, the server was made using Flask and the webpage with Django.
 
 <details>
  <summary>Imagenes del sitio web</summary>
@@ -15,37 +13,26 @@ UNA
  ![sckitty6](scikitty_webpage_photos/scikitty6.png)
 </details>
 
-# Descarga
+## Members:
+Nicole Araya Ballestero | Esteban Mojica Gonzalez | Daniel Ramirez Calvo | Ariana Solano Vallejos 
 
-Se descarga la aplicación del drive del profesor en formato zip
+## Instalation
 
-## Instalación
-
-Una vez descargado el zip se descomprime
-
-Abrimos el Anaconda Prompt en donde se hizo la debida descompresión del proyecto
-
-Entramos en la carpeta del proyecto con el comando
-
-```
-cd EIF420O-I-2024-SciKitty-P1-NicoleArayaBallestero-04-01pm
-```
-
-Seguidamente se deben instalar todas las dependencias que necesita la aplicación para funcionar con:
+All dependencies that the application needs must be installed with:
 
 ```
  .\pip_install.bat
 ```
 
-## Ejecución del sitio web
+## Execute
 
-Para ejecutar el sitio web utilizaremos el siguiente ejecutable:
+To run the website we will use the following .bat:
 
 ```
  .\run_web.bat
 ```
 
-Y ejecutar el servidor python de scikitty, en otra prompt, sera el siguiente ejecutable:
+And to run the scikitty python server, in another prompt, run the following .bat:
 
 ```
  .\run_server.bat
